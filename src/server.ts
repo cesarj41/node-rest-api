@@ -1,19 +1,14 @@
 import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
-import { RoutingControllersOptions, useExpressServer } from 'routing-controllers';
+import { useExpressServer, useContainer } from 'routing-controllers';
+import { Container } from 'typedi';
 import cookieParser from 'cookie-parser';
 import * as swaggerUiExpress from "swagger-ui-express";
-import { handler, HttpStatusCodes, swagger, routingOption  } from "./util";
-import { logger } from './components/logger/logger.middleware';
-import { requestId } from './middlewares/requestId';
-import { TodoController } from './components/todo/todo.controller';
+import { handler, HttpStatusCodes, swagger  } from "./util";
+import { logger, requestId } from './middlewares/Logger';
+import { routing } from './util/routing';
 
 const app = express();
-const routing: RoutingControllersOptions = {
-  routePrefix: "/api",
-  defaultErrorHandler: false,
-  controllers: [TodoController],
-}
 const spec = swagger();
 
 app.disable('x-powered-by');
@@ -27,7 +22,8 @@ app.use(cookieParser("secret"));
 app.use(requestId);
 app.use(logger);
 app.use("/docs", swaggerUiExpress.serve, swaggerUiExpress.setup(spec));
-useExpressServer(app, routingOption());
+useContainer(Container);
+useExpressServer(app, routing);
 
 // NOT_FOUND (404) middleware
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

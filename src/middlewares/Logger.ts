@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { randomUUID } from "crypto";
 import expressPino from "express-pino-logger";
 
 export const logger = expressPino({
@@ -11,7 +12,7 @@ export const logger = expressPino({
 
       if (body_type === "object") {
         const { password, ...rest } = req.raw.body;
-        req.body = rest
+        req.body = rest;
       } else {
         req.body = req.raw.body;
       }
@@ -19,3 +20,10 @@ export const logger = expressPino({
     },
   },
 });
+
+export function requestId (req: any, _: any, next: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  req.id = randomUUID();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  next();
+}

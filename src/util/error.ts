@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { randomUUID } from "crypto";
 import { Response } from "express";
 import { HttpStatusCodes } from "@src/util";
-import { logger } from "../components/logger/logger.middleware";
+import { logger } from "../middlewares/Logger";
+import { HttpError } from "routing-controllers";
 
 export type ErrorType =
   | "INVALID_REQUEST"
@@ -32,6 +34,10 @@ function defaultMessage(error: ErrorType, description?: string) {
     return "Unauthorized request, please login.";
   }
 
+  if (error === "NOT_FOUND") {
+    return "Resource not found";
+  }
+
   return description || "";
 }
 
@@ -54,14 +60,14 @@ class ErrorHandler {
     error: Error | unknown,
     res?: Response,
   ): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (error as any).traceId = randomUUID();
     log.error(error);
     if (!res || res.headersSent) {
       return;
     }
-    if (error instanceof AppError) {
-      res.status(httpCode(error.type)).send({
+
+    if (error instanceof HttpError) {
+      res.status(error.httpCode).send({
         error: {
           message: error.message,
         },
