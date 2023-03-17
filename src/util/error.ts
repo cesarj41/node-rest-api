@@ -39,7 +39,8 @@ class ErrorHandler {
     error: Error | ServerError | unknown,
     res?: Response,
   ): void {
-    (error as any).traceId = randomUUID();
+    const traceId = randomUUID();
+    (error as any).traceId = traceId;
     log.error(error);
     if (!res || res.headersSent) {
       return;
@@ -48,13 +49,14 @@ class ErrorHandler {
     if (error instanceof ServerError) {
       res.status(error.httpCode).send({
         error: {
+          traceId,
           message: error.message,
         },
       });
     } else {
       res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
         error: {
-          traceId: randomUUID(),
+          traceId,
           message: "Internal server error, please contact support.",
         },
       });
