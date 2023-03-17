@@ -1,64 +1,51 @@
-import express, { Request, Response, NextFunction } from 'express';
-import 'express-async-errors';
-import { useExpressServer, useContainer } from 'routing-controllers';
-import { Container } from 'typedi';
-import cookieParser from 'cookie-parser';
-import * as swaggerUiExpress from "swagger-ui-express";
-import { handler, HttpStatusCodes, swagger  } from "./util";
-import { logger, requestId } from './middlewares/Logger';
-import { routing } from './util/routing';
-
+/* eslint-disable no-process-exit */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import "express-async-errors";
+import express, { NextFunction, Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import { handler, HttpStatusCodes } from "./util";
+import { logger, identifier } from "./middlewares/Logger";
+import { env } from "./constants";
 const app = express();
-const spec = swagger();
 
-app.disable('x-powered-by');
+app.disable("x-powered-by");
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-app.use(cookieParser("secret"));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser(env.CookieProps.Secret));
 
-// if (EnvVars.nodeEnv === NodeEnvs.Production) {
-//   app.use(helmet());
-// }
-app.use(requestId);
+if (env.nodeEnv === "production") {
+  app.use(helmet());
+}
+app.use(identifier);
 app.use(logger);
-app.use("/docs", swaggerUiExpress.serve, swaggerUiExpress.setup(spec));
-useContainer(Container);
-useExpressServer(app, routing);
 
 // NOT_FOUND (404) middleware
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((_, res, next) => {
-  if (!res.headersSent) {
-    res.status(HttpStatusCodes.NOT_FOUND).send({
-      error: {
-        message: "resource not found.",
-      },
-    });
-  }
+  res.status(HttpStatusCodes.NOT_FOUND).send({
+    error: {
+      message: "resource not found.",
+    },
+  });
 });
 
 // Error middleware
-app.use((
-  err: Error,
-  req: Request,
-  res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  next: NextFunction,
-) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   handler.handleError(req.log, err, res);
-});
-
-process.on("uncaughtException", (error: Error) => {
-  handler.handleError(logger.logger, error);
-  if(!handler.isTrustedError(error)) {
-    // eslint-disable-next-line no-process-exit
+  if (!handler.isTrustedError(err)) {
     process.exit(1);
   }
 });
 
 process.on("unhandledRejection", (reason) => {
-  handler.handleError(logger.logger, reason);
+  throw reason;
 });
 
+process.on("uncaughtException", (error: Error) => {
+  handler.handleError(logger.logger, error);
+  if (!handler.isTrustedError(error)) {
+    process.exit(1);
+  }
+});
 
 export default app;
