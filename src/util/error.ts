@@ -3,11 +3,40 @@ import { randomUUID } from "crypto";
 import { Response } from "express";
 import { HttpStatusCodes } from "@src/util";
 import { logger } from "../middlewares/Logger";
-import { HttpError } from "routing-controllers";
+
+export class ServerError extends Error {
+  public httpCode: HttpStatusCodes;
+  public isTrusted: boolean;
+  constructor(...message: string[]) {
+    super(message.join());
+    Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
+    this.httpCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
+    this.isTrusted = false;
+    Error.captureStackTrace(this);
+  }
+}
+
+export class NotFoundError extends ServerError {
+  constructor(message?: string) {
+    super(message ?? "Resource not found");
+    this.httpCode = HttpStatusCodes.NOT_FOUND;
+    this.isTrusted = true;
+  }
+}
+
+export class BadRequestError extends ServerError {
+  constructor(...message: string[]) {
+    super(message?.join());
+    this.httpCode = HttpStatusCodes.BAD_REQUEST;
+    this.isTrusted = true;
+  }
+}
+
+
 class ErrorHandler {
   public handleError(
     log: typeof logger["logger"],
-    error: Error | unknown,
+    error: Error | ServerError | unknown,
     res?: Response,
   ): void {
     (error as any).traceId = randomUUID();
@@ -16,7 +45,7 @@ class ErrorHandler {
       return;
     }
 
-    if (error instanceof HttpError) {
+    if (error instanceof ServerError) {
       res.status(error.httpCode).send({
         error: {
           message: error.message,
@@ -31,8 +60,11 @@ class ErrorHandler {
       });
     }
   }
-  public isTrustedError(error: Error) {
-    return error instanceof HttpError;
+  public isTrustedError(error: Error | ServerError | unknown): boolean {
+    if (error instanceof ServerError) {
+      return error.isTrusted;
+    }
+    return false;
   }
 }
 

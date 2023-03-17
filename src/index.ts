@@ -1,12 +1,9 @@
 import 'reflect-metadata';
-import * as dotenv from "dotenv";
-// eslint-disable-next-line node/no-process-env
-dotenv.config({ path: `.env${process.env.NODE_ENV ? `.${process.env.NODE_ENV}` : ""}`});
-import logger from 'jet-logger';
+import './pre-start'; // Must be the first import
+import { logger } from './middlewares/Logger';
 import server from './server';
-
+import { env } from "./constants";
 
 // **** Start server **** //
 
-const msg = (`Server started on port: ${process.env.PORT ?? "pro"}`);
-server.listen(8080, () => logger.info(msg));
+server.listen(8080, () => logger.logger.info(`Server started on port: ${env.Port}`));

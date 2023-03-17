@@ -1,7 +1,6 @@
 import {IsString, IsBoolean} from "class-validator";
 
 export class TodoModel {
-  
   @IsString()
   public id: string;
 

@@ -3,9 +3,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { randomUUID } from "crypto";
 import expressPino from "express-pino-logger";
+import { env } from "@src/constants";
+
+const { log: { level } } = env;
 
 export const logger = expressPino({
-  level: process.env.LOG_LEVEL || "info",
+  level,
   serializers: {
     req(req) {
       const body_type = typeof req.raw.body;
@@ -21,7 +24,7 @@ export const logger = expressPino({
   },
 });
 
-export function requestId (req: any, _: any, next: any) {
+export function identifier (req: any, _: any, next: any) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   req.id = randomUUID();
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
