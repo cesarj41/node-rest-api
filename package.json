@@ -8,11 +8,12 @@
     "start": "node -r module-alias/register ./dist --env=production",
     "dev": " nodemon",
     "test": "nodemon --config ./spec/nodemon.json",
-    "test:no-reloading": "npx ts-node --files -r tsconfig-paths/register ./spec"
+    "test:no-reloading": "npx ts-node --files -r tsconfig-paths/register ./spec",
+    "migrate": "dotenv -e ./env/development.env -- npx prisma migrate"
   },
   "nodemonConfig": {
     "watch": [
-      "src"
+      "src" 
     ],
     "ext": "ts",
     "exec": "./node_modules/.bin/ts-node --files -r tsconfig-paths/register ./src | npx pino-pretty -i time,hostname,module,__in,name,pid"
@@ -23,8 +24,11 @@
   "engines": {
     "node": ">=12.20.0"
   },
+  "prisma": {
+    "schema": "src/prisma/schema.prisma"
+  },
   "dependencies": {
-    "@prisma/client": "^4.11.0",
+    "@prisma/client": "^4.9.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "class-validator-jsonschema": "^5.0.0",
@@ -51,6 +55,7 @@
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.55.0",
     "@typescript-eslint/parser": "^5.55.0",
+    "dotenv-cli": "^7.1.0",
     "eslint": "^8.36.0",
     "eslint-plugin-node": "^11.1.0",
     "fs-extra": "^11.1.0",

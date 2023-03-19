@@ -42,6 +42,7 @@ class ErrorHandler {
     const traceId = randomUUID();
     (error as any).traceId = traceId;
     log.error(error);
+  
     if (!res || res.headersSent) {
       return;
     }

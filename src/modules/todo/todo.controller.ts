@@ -8,7 +8,7 @@ import { Service } from "typedi";
 export class TodoController {
   private ctx: DbContext;
 
-  constructor(public dbContext: DbContext) {
+  constructor(dbContext: DbContext) {
     this.ctx = dbContext;
   }
   

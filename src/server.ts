@@ -7,6 +7,8 @@ import helmet from "helmet";
 import { handler, HttpStatusCodes } from "./util";
 import { logger, identifier } from "./middlewares/Logger";
 import { env } from "./constants";
+import todoRouter from "./modules/todo/todo.router";
+
 const app = express();
 
 app.disable("x-powered-by");
@@ -19,6 +21,7 @@ if (env.nodeEnv === "production") {
 }
 app.use(identifier);
 app.use(logger);
+app.use("/api/todos", todoRouter);
 
 // NOT_FOUND (404) middleware
 app.use((_, res, next) => {

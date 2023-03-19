@@ -17,7 +17,7 @@ function getEnvVariable<T>(name: string, fallback?: T): T {
   return variable as T;
 }
 export const  env = {
-  nodeEnv: getEnvVariable<string>("NODE_ENV"),
+  nodeEnv: getEnvVariable<"production" | "development" | "test">("NODE_ENV"),
   Port: getEnvVariable("PORT", 8080),
   CookieProps: {
     Key: 'YOUr_KEY_HERE',
