@@ -2,11 +2,11 @@ import { DbContext } from "@src/modules/data/DbContext";
 import { BadRequestError, NotFoundError } from "@src/util";
 import { Request, Response } from "express";
 import { validate } from "class-validator";
-import { Service } from "typedi";
+import { Service as Controller } from "typedi";
 import { CreateTodoModel } from "./todo.models";
 
 
-@Service()
+@Controller()
 export class TodoController {
   private ctx: DbContext;
 
