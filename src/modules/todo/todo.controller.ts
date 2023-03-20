@@ -1,7 +1,9 @@
 import { DbContext } from "@src/modules/data/DbContext";
-import { NotFoundError } from "@src/util";
+import { BadRequestError, NotFoundError } from "@src/util";
 import { Request, Response } from "express";
+import { validate } from "class-validator";
 import { Service } from "typedi";
+import { CreateTodoModel } from "./todo.models";
 
 
 @Service()
@@ -29,15 +31,26 @@ export class TodoController {
     
   }
 
-  createTodo(req: Request, res: Response) {
-    res.send(req.body);
-    // return await this.ctx.db.todo.create({
-    //   data: {
-    //     content: todo.content,
-    //     completed: todo.completed ?? false,
-    //     authorId: "Cesar por ahora",
-    //   },
-    // });
+  async createTodo(req: Request, res: Response) {
+    const create = new CreateTodoModel();
+    create.name = req.body.name;
+    create.completed = req.body.completed;
+
+    const errors = await validate(create);
+
+    if (errors.length > 0) {
+      throw new BadRequestError(errors.toString());
+    }
+
+    const todo = await this.ctx.db.todo.create({
+      data: {
+        content: create.name,
+        completed: create.completed ?? false,
+        authorId: "Cesar por ahora",
+      },
+    });
+
+    res.send(todo);
   }
 
   updateTodo() {

@@ -1,12 +1,10 @@
-import {IsString, IsBoolean} from "class-validator";
+import {IsString, IsBoolean, IsOptional} from "class-validator";
 
-export class TodoModel {
-  @IsString()
-  public id: string;
-
+export class CreateTodoModel {
   @IsString()
   public name: string;
-  
+
+  @IsOptional()
   @IsBoolean()
   public completed: boolean;
 }

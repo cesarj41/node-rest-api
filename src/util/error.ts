@@ -39,15 +39,18 @@ class ErrorHandler {
     error: Error | ServerError | unknown,
     res?: Response,
   ): void {
+    let key: keyof typeof log= "error";
     const traceId = randomUUID();
     (error as any).traceId = traceId;
-    log.error(error);
   
     if (!res || res.headersSent) {
+      log.error(error);
       return;
     }
-
     if (error instanceof ServerError) {
+      if (error.httpCode < 500) {
+        key = "warn";
+      }
       res.status(error.httpCode).send({
         error: {
           traceId,
@@ -62,6 +65,7 @@ class ErrorHandler {
         },
       });
     }
+    log[key](error);
   }
   public isTrustedError(error: Error | ServerError | unknown): boolean {
     if (error instanceof ServerError) {
