@@ -5,7 +5,6 @@ import { validate } from "class-validator";
 import { Service as Controller } from "typedi";
 import { CreateTodoModel } from "./todo.models";
 
-
 @Controller()
 export class TodoController {
   private ctx: DbContext;
